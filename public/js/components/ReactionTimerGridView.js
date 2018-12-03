@@ -50,6 +50,7 @@ class ReactionTimerGridView {
 
   activateCell(rowIndex, colIndex) {
     const cellEl = this.getCellByPosition(rowIndex, colIndex);
+    if (cellEl.className === 'cell-active') return true;
     cellEl.className = 'cell-active';
     cellEl.addEventListener('click', this.activeCellClickHandler);
   }
