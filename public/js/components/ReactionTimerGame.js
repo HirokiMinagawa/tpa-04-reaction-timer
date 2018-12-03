@@ -15,6 +15,7 @@ class ReactionTimerGame {
   }
 
   handleRoundStart() {
+    document.querySelector('.btn-start').disabled = true;
     this.clickOrder = 0;
     this.activeCellRow = {};
     this.activeCellCol = {};
@@ -44,6 +45,14 @@ class ReactionTimerGame {
         this.view.deactivateCell(this.activeCellRow[i], this.activeCellCol[i]);
         this.calculateTime();
       }
+    }
+    this.endjudge();
+  }
+
+  endjudge() {
+    if (this.clickOrder === this.activeCellNumbers) {
+      console.log('end');
+      document.querySelector('.btn-start').disabled = false;
     }
   }
 
