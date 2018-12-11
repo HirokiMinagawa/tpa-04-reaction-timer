@@ -3,57 +3,62 @@ import { getRandomInt } from '../utils/math-utils.js';
 import ReactionTimerGridView from './ReactionTimerGridView.js';
 
 class ReactionTimerGame {
-  constructor() {
+  constructor(activeCellNumbers) {
     this.view = null;
-    this.activeCellRow1 = null;
-    this.activeCellCol1 = null;
-    this.activeCellRow2 = null;
-    this.activeCellCol2 = null;
+    this.activeCellRow = null;
+    this.activeCellCol = null;
     this.clickOrder = null;
+    this.activeCellNumbers = activeCellNumbers;
+    this.outputOrder = [null, '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
     this.currentStartTime = null;
     this.currentEndTime = null;
   }
 
   handleRoundStart() {
+    document.querySelector('.btn-start').disabled = true;
     this.clickOrder = 0;
+    this.activeCellRow = {};
+    this.activeCellCol = {};
     const delay = getRandomInt(500, 3000);
-    setTimeout(this.startCycle.bind(this, 1), delay);
-    setTimeout(this.startCycle.bind(this, 2), delay);
+    for (let i = 0; i < this.activeCellNumbers; i++) {
+      setTimeout(this.startCycle.bind(this, i), delay);
+    }
   }
 
   startCycle(activeNum) {
     this.currentStartTime = new Date().getTime(); // milliseconds
-    this.view.deactivateCell(this['activeCellRow' + activeNum], this['activeCellCol' + activeNum]);
     this.triggerRandomCell(activeNum);
   }
 
   triggerRandomCell(activeNum) {
     const randomRowIndex = getRandomInt(0, NUM_ROWS);
     const randomColIndex = getRandomInt(0, NUM_COLS);
-    this['activeCellRow' + activeNum] = randomRowIndex;
-    this['activeCellCol' + activeNum] = randomColIndex;
-    this.view.activateCell(randomRowIndex, randomColIndex);
+    this.activeCellRow[activeNum] = randomRowIndex;
+    this.activeCellCol[activeNum] = randomColIndex;
+    if (this.view.activateCell(randomRowIndex, randomColIndex)) this.triggerRandomCell(activeNum);
   }
 
   handleActiveCellSelected(e) {
-    this.clickOrder += 1
-    switch (e.target.id) {
+    this.clickOrder += 1;
+    for (let i = 0; i < this.activeCellNumbers; i++) {
+      if (e.target.id === `${this.activeCellRow[i]}:${this.activeCellCol[i]}`) {
+        this.view.deactivateCell(this.activeCellRow[i], this.activeCellCol[i]);
+        this.calculateTime();
+      }
+    }
+    this.endjudge();
+  }
 
-      case `${this.activeCellRow1}:${this.activeCellCol1}`:
-      this.view.deactivateCell(this.activeCellRow1, this.activeCellCol1);
-      this.calculateTime();
-      break;
-
-      case `${this.activeCellRow2}:${this.activeCellCol2}`:
-      this.view.deactivateCell(this.activeCellRow2, this.activeCellCol2);
-      this.calculateTime();
-      break;
+  endjudge() {
+    if (this.clickOrder === this.activeCellNumbers) {
+      console.log('end');
+      document.querySelector('.btn-start').disabled = false;
     }
   }
 
   calculateTime() {
     this.currentEndTime = new Date().getTime();
-    console.log(`${this.clickOrder === 1 ? '1st' : '2nd'} reaction : ${this.currentEndTime - this.currentStartTime}`);
+    console.log(`${this.outputOrder[this.clickOrder]} reaction : ${this.currentEndTime - this.currentStartTime}`);
   }
 
   init() {
